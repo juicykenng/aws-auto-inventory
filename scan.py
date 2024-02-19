@@ -323,15 +323,21 @@ def main(
                 results.extend(region_results)
                 for service_result in region_results:
                     directory = os.path.join(output_dir, timestamp, region)
+                    service_directory = os.path.join(directory, service_result['service'])
                     try:
                         os.makedirs(directory, exist_ok=True)
+                        os.makedirs(service_directory, exist_ok=True)
                     except NotADirectoryError:
                         log.error("Invalid directory name: %s", directory)
                     with open(
-                        os.path.join(directory, f"{service_result['service']}-{service_result['function']}.json"),
+                        os.path.join(service_directory, f"{service_result['function']}.json"),
                         "w",
                     ) as f:
-                        json.dump(service_result["result"], f, cls=DateTimeEncoder)
+                        try:
+                            json.dump(service_result["result"], f, cls=DateTimeEncoder)
+                        except:
+                            print(f"Skip: {service_result['service']}")
+                            continue
             except Exception as exc:
                 log.error("%r generated an exception: %s" % (region, exc))
                 log.error(traceback.format_exc())
